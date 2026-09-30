@@ -1,0 +1,13 @@
+{
+  "domain": "tuya_dreamegg",
+  "name": "Dreamegg Sunrise Controls",
+  "after_dependencies": ["tuya"],
+  "codeowners": ["@ahmadtawakol"],
+  "config_flow": true,
+  "documentation": "https://github.com/ahmadtawakol/tuya-dreamegg",
+  "integration_type": "hub",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/ahmadtawakol/tuya-dreamegg/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

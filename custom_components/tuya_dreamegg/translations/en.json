@@ -1,0 +1,46 @@
+{
+  "title": "Dreamegg Sunrise Controls",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select your Tuya account",
+        "description": "Adds the missing controls to every supported Dreamegg Sunrise 1+ in this account. No additional Tuya credentials are required.",
+        "data": {
+          "tuya_entry_id": "Tuya account"
+        },
+        "data_description": {
+          "tuya_entry_id": "The official Tuya integration account containing your Dreamegg devices."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This Tuya account is already configured.",
+      "no_supported_devices": "No supported Dreamegg Sunrise 1+ devices were found in the loaded Tuya accounts.",
+      "tuya_not_configured": "Set up and load the official Tuya integration before adding Dreamegg Sunrise Controls."
+    }
+  },
+  "entity": {
+    "button": {
+      "stop": {
+        "name": "Stop"
+      }
+    },
+    "number": {
+      "countdown": {
+        "name": "Countdown"
+      },
+      "display_brightness": {
+        "name": "Display brightness"
+      }
+    },
+    "select": {
+      "time_format": {
+        "name": "Time format",
+        "state": {
+          "12h": "12-hour",
+          "24h": "24-hour"
+        }
+      }
+    }
+  }
+}
