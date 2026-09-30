@@ -42,11 +42,13 @@ async def test_full_setup_commands_updates_and_unload(hass) -> None:
     assert await hass.config_entries.async_setup(entry.entry_id) is True
     await hass.async_block_till_done()
     assert entry.state is ConfigEntryState.LOADED
+    assert len(manager.mq.message_listeners) == 1
 
     entity_ids = {
         "number.bedroom_dreamegg_countdown",
         "number.bedroom_dreamegg_display_brightness",
         "select.bedroom_dreamegg_time_format",
+        "select.bedroom_dreamegg_work_mode",
         "button.bedroom_dreamegg_stop",
     }
     assert all(hass.states.get(entity_id) is not None for entity_id in entity_ids)
@@ -71,6 +73,15 @@ async def test_full_setup_commands_updates_and_unload(hass) -> None:
         blocking=True,
     )
     await hass.services.async_call(
+        "select",
+        SERVICE_SELECT_OPTION,
+        {
+            ATTR_ENTITY_ID: "select.bedroom_dreamegg_work_mode",
+            "option": "colour",
+        },
+        blocking=True,
+    )
+    await hass.services.async_call(
         "button",
         "press",
         {ATTR_ENTITY_ID: "button.bedroom_dreamegg_stop"},
@@ -79,6 +90,7 @@ async def test_full_setup_commands_updates_and_unload(hass) -> None:
     assert [call.args[1] for call in manager.send_commands.call_args_list] == [
         [{"code": "countdown", "value": 25}],
         [{"code": "time_mode", "value": "24h"}],
+        [{"code": "work_mode", "value": "colour"}],
         [{"code": "stop", "value": True}],
     ]
 
@@ -98,4 +110,5 @@ async def test_full_setup_commands_updates_and_unload(hass) -> None:
         hass.states.get(entity_id).state == STATE_UNAVAILABLE
         for entity_id in entity_ids
     )
+    assert not manager.mq.message_listeners
     official.mock_state(hass, ConfigEntryState.NOT_LOADED)

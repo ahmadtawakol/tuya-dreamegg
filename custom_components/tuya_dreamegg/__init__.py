@@ -1,35 +1,32 @@
 """Dreamegg Sunrise Controls integration."""
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from .capture import RawDpCapture
 from .const import (
     CONF_TUYA_ENTRY_ID,
     PLATFORMS,
-    SUPPORTED_CATEGORY,
-    SUPPORTED_PRODUCT_IDS,
 )
+from .helpers import is_supported_device
 
 
-def is_supported_device(device: Any) -> bool:
-    """Return whether a Tuya device is a supported Dreamegg model."""
-    return (
-        getattr(device, "category", None) == SUPPORTED_CATEGORY
-        and getattr(device, "product_id", None) in SUPPORTED_PRODUCT_IDS
-    )
-
-
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class DreameggRuntimeData:
     """Resolve the current official Tuya runtime after account reloads."""
 
     hass: HomeAssistant
     tuya_entry_id: str
+    capture: RawDpCapture = field(init=False)
+
+    def __post_init__(self) -> None:
+        """Create the privacy-bounded raw datapoint capture."""
+        self.capture = RawDpCapture()
 
     @property
     def manager(self) -> Any | None:
@@ -69,6 +66,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: DreameggConfigEntry) -> 
 
     entry.runtime_data = runtime
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    runtime.capture.attach(runtime.manager)
+    entry.async_on_unload(runtime.capture.detach)
     return True
 
 

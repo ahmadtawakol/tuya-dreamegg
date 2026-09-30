@@ -4,6 +4,16 @@ import json
 from collections.abc import Mapping
 from typing import Any
 
+from .const import SUPPORTED_CATEGORY, SUPPORTED_PRODUCT_IDS
+
+
+def is_supported_device(device: Any) -> bool:
+    """Return whether a Tuya device is a supported Dreamegg model."""
+    return (
+        getattr(device, "category", None) == SUPPORTED_CATEGORY
+        and getattr(device, "product_id", None) in SUPPORTED_PRODUCT_IDS
+    )
+
 
 def datapoint_values(device: Any, dpcode: str) -> dict[str, Any]:
     """Return normalized metadata for one Tuya datapoint."""

@@ -7,8 +7,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntryState
 
-from . import is_supported_device
 from .const import CONF_TUYA_ENTRY_ID, DOMAIN, TUYA_DOMAIN
+from .helpers import is_supported_device
 
 
 class DreameggConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

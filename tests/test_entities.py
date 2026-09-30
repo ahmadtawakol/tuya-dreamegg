@@ -81,18 +81,28 @@ async def test_select_and_button_send_expected_commands(hass) -> None:
 
     await select_platform.async_setup_entry(hass, entry, add_selects)
     await button_platform.async_setup_entry(hass, entry, add_buttons)
-    time_format = add_selects.call_args.args[0][0]
+    selects = {
+        entity.entity_description.key: entity
+        for entity in add_selects.call_args.args[0]
+    }
+    time_format = selects["time_mode"]
+    work_mode = selects["work_mode"]
     stop = add_buttons.call_args.args[0][0]
 
     assert time_format.options == ["12h", "24h"]
     assert time_format.current_option == "12h"
+    assert work_mode.options == ["scene", "customize_scene", "colour"]
+    assert work_mode.current_option == "scene"
     time_format.hass = hass
+    work_mode.hass = hass
     stop.hass = hass
     await time_format.async_select_option("24h")
+    await work_mode.async_select_option("customize_scene")
     await stop.async_press()
 
     assert manager.send_commands.call_args_list == [
         ((device.id, [{"code": "time_mode", "value": "24h"}]),),
+        ((device.id, [{"code": "work_mode", "value": "customize_scene"}]),),
         ((device.id, [{"code": "stop", "value": True}]),),
     ]
 
@@ -174,4 +184,10 @@ async def test_new_supported_device_is_discovered(hass) -> None:
     async_dispatcher_send(hass, TUYA_DISCOVERY_NEW, [second.id])
 
     assert add_entities.call_count == 2
-    assert add_entities.call_args.args[0][0]._device_id == second.id
+    assert {
+        (entity._device_id, entity.entity_description.key)
+        for entity in add_entities.call_args.args[0]
+    } == {
+        (second.id, "time_mode"),
+        (second.id, "work_mode"),
+    }

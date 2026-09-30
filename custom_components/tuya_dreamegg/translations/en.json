@@ -40,6 +40,14 @@
           "12h": "12-hour",
           "24h": "24-hour"
         }
+      },
+      "work_mode": {
+        "name": "Work mode",
+        "state": {
+          "colour": "Colour",
+          "customize_scene": "Custom scene",
+          "scene": "Scene"
+        }
       }
     }
   }

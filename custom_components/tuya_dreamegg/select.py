@@ -9,10 +9,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import DreameggConfigEntry, DreameggRuntimeData, is_supported_device
-from .const import DP_TIME_MODE, TUYA_DISCOVERY_NEW
+from . import DreameggConfigEntry, DreameggRuntimeData
+from .const import DP_TIME_MODE, DP_WORK_MODE, TUYA_DISCOVERY_NEW
 from .entity import DreameggEntity
-from .helpers import datapoint_values, has_writable_datapoint
+from .helpers import datapoint_values, has_writable_datapoint, is_supported_device
 
 TIME_FORMAT = SelectEntityDescription(
     key=DP_TIME_MODE,
@@ -20,6 +20,18 @@ TIME_FORMAT = SelectEntityDescription(
     icon="mdi:clock-digital",
     entity_category=EntityCategory.CONFIG,
 )
+WORK_MODE = SelectEntityDescription(
+    key=DP_WORK_MODE,
+    translation_key="work_mode",
+    icon="mdi:theme-light-dark",
+    entity_category=EntityCategory.CONFIG,
+)
+SELECTS = (TIME_FORMAT, WORK_MODE)
+
+DEFAULT_OPTIONS = {
+    DP_TIME_MODE: ["12h", "24h"],
+    DP_WORK_MODE: ["scene", "customize_scene", "colour"],
+}
 
 
 class DreameggSelect(DreameggEntity, SelectEntity):
@@ -39,7 +51,7 @@ class DreameggSelect(DreameggEntity, SelectEntity):
         self._attr_options = (
             [option for option in value_range if isinstance(option, str)]
             if isinstance(value_range, list)
-            else ["12h", "24h"]
+            else DEFAULT_OPTIONS[description.key]
         )
 
     @property
@@ -51,7 +63,7 @@ class DreameggSelect(DreameggEntity, SelectEntity):
 
     @override
     async def async_select_option(self, option: str) -> None:
-        """Select the time format."""
+        """Select an enum option."""
         await self._async_send_value(option)
 
 
@@ -62,22 +74,23 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dreamegg select entities."""
     runtime = entry.runtime_data
-    seen: set[str] = set()
+    seen: set[tuple[str, str]] = set()
 
     @callback
     def async_discover(device_ids: Iterable[str]) -> None:
         entities: list[DreameggSelect] = []
         for device_id in device_ids:
             device = runtime.device(device_id)
-            if (
-                device is None
-                or device_id in seen
-                or not is_supported_device(device)
-                or not has_writable_datapoint(device, TIME_FORMAT.key)
-            ):
+            if device is None or not is_supported_device(device):
                 continue
-            seen.add(device_id)
-            entities.append(DreameggSelect(runtime, device, TIME_FORMAT))
+            for description in SELECTS:
+                unique_key = (device_id, description.key)
+                if unique_key in seen or not has_writable_datapoint(
+                    device, description.key
+                ):
+                    continue
+                seen.add(unique_key)
+                entities.append(DreameggSelect(runtime, device, description))
         if entities:
             async_add_entities(entities)
 

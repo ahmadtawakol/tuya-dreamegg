@@ -13,6 +13,27 @@ OFFICIAL_ENTRY_ID = "official-tuya-entry"
 PRODUCT_ID = "yible1syyda3s5iv"
 
 
+class FakeMQ:
+    """Minimal raw Tuya MQTT listener registry."""
+
+    def __init__(self) -> None:
+        """Initialize the listener set."""
+        self.message_listeners: set = set()
+
+    def add_message_listener(self, listener) -> None:
+        """Register a raw message listener."""
+        self.message_listeners.add(listener)
+
+    def remove_message_listener(self, listener) -> None:
+        """Remove a raw message listener."""
+        self.message_listeners.discard(listener)
+
+    def emit(self, message: dict) -> None:
+        """Emit a raw Tuya MQTT message."""
+        for listener in self.message_listeners:
+            listener(message)
+
+
 def dreamegg_device(
     device_id: str = "dreamegg-1",
     name: str = "Bedroom Dreamegg",
@@ -32,6 +53,9 @@ def dreamegg_device(
     function.update(
         {
             "time_mode": SimpleNamespace(values=json.dumps({"range": ["12h", "24h"]})),
+            "work_mode": SimpleNamespace(
+                values=json.dumps({"range": ["scene", "customize_scene", "colour"]})
+            ),
             "stop": SimpleNamespace(values="{}"),
         }
     )
@@ -40,6 +64,7 @@ def dreamegg_device(
         name=name,
         category="bzyd",
         product_id=product_id,
+        product_name="Dreamegg Sunrise 1+",
         online=online,
         function=function,
         status_range=dict(function),
@@ -47,7 +72,12 @@ def dreamegg_device(
             "countdown": 15,
             "backlight": 80,
             "time_mode": "12h",
+            "work_mode": "scene",
             "stop": False,
+        },
+        local_strategy={
+            2: {"status_code": "work_mode"},
+            21: {"status_code": "time_mode"},
         },
     )
 
@@ -62,6 +92,8 @@ def official_entry(
     """Return an official Tuya config entry and its manager."""
     manager = SimpleNamespace(
         device_map={device.id: device for device in devices or []},
+        mq=FakeMQ(),
+        query_scenes=Mock(return_value=[]),
         send_commands=Mock(),
     )
     entry = MockConfigEntry(

@@ -14,6 +14,7 @@ DP_BACKLIGHT = "backlight"
 DP_COUNTDOWN = "countdown"
 DP_STOP = "stop"
 DP_TIME_MODE = "time_mode"
+DP_WORK_MODE = "work_mode"
 
 TUYA_DISCOVERY_NEW = "tuya_discovery_new"
 TUYA_UPDATE_ENTITY = "tuya_entry_update"

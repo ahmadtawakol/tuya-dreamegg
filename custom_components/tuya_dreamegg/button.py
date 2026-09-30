@@ -8,10 +8,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import DreameggConfigEntry, DreameggRuntimeData, is_supported_device
+from . import DreameggConfigEntry, DreameggRuntimeData
 from .const import DP_STOP, TUYA_DISCOVERY_NEW
 from .entity import DreameggEntity
-from .helpers import has_writable_datapoint
+from .helpers import has_writable_datapoint, is_supported_device
 
 STOP = ButtonEntityDescription(
     key=DP_STOP,

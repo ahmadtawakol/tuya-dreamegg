@@ -14,6 +14,7 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
 - **Countdown** — 0 to 1,440 minutes
 - **Display brightness** — 0 to 100
 - **Time format** — 12-hour or 24-hour
+- **Work mode** — Scene, Custom scene, or Colour
 - **Stop** — a momentary button for the device's `stop` datapoint
 
 The entities are attached to the same Home Assistant device as the official
@@ -60,6 +61,24 @@ HACS, and restart Home Assistant. The official Tuya entities are unaffected.
 
 Once Home Assistant Core includes these mappings in a release, remove this
 custom integration to avoid duplicate controls.
+
+## Investigating app-only alarms and routines
+
+The Dreamegg app exposes alarm and routine fields that are not present in the
+standard Tuya device specification. To collect evidence safely:
+
+1. Reload **Dreamegg Sunrise Controls** after installing or updating it.
+2. In the Dreamegg/D26 app, edit one alarm or routine and save it.
+3. In Home Assistant, open **Settings → Devices & services → Dreamegg Sunrise
+   Controls → Download diagnostics**.
+
+The integration retains at most 200 raw datapoint reports per supported clock,
+in memory only. It filters out all other devices and does not log Tuya tokens or
+credentials. Diagnostics also include the Tuya home scenes visible through the
+official Device Sharing session.
+
+See the current [device API investigation](docs/device-api-investigation.md) for
+the evidence, likely API boundaries, and controlled capture procedure.
 
 ## How it works
 
