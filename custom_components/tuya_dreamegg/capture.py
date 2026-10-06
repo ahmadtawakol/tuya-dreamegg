@@ -4,12 +4,13 @@ from collections import deque
 from collections.abc import Mapping
 from copy import deepcopy
 from threading import Lock
+from time import time
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import TUYA_RAW_DP_UPDATE
+from .const import DP_MUSIC_SET, TUYA_RAW_DP_UPDATE
 from .helpers import is_supported_device
 
 DEVICE_REPORT_PROTOCOL = 4
@@ -126,6 +127,32 @@ class RawDpCapture:
         """Return the most recent captured value for a datapoint."""
         with self._lock:
             return deepcopy(self._latest_values.get(device_id, {}).get(dp_id))
+
+    def record_local_music(self, device_id: str, value: str) -> None:
+        """Record a device-confirmed LAN readback, never an optimistic write."""
+        with self._lock:
+            if device_id not in self._device_strategies:
+                return
+            if self._latest_values.get(device_id, {}).get(10) == value:
+                return
+            self._latest_values.setdefault(device_id, {})[10] = value
+            self._reports.setdefault(
+                device_id, deque(maxlen=MAX_REPORTS_PER_DEVICE)
+            ).append(
+                {
+                    "dp_id": 10,
+                    "known_code": DP_MUSIC_SET,
+                    "timestamp": int(time() * 1000),
+                    "value": value,
+                    "source": "local_readback",
+                }
+            )
+        self._hass.add_job(
+            async_dispatcher_send,
+            self._hass,
+            f"{TUYA_RAW_DP_UPDATE}_{device_id}",
+            10,
+        )
 
     def snapshot(self) -> dict[str, list[dict[str, Any]]]:
         """Return a stable copy of the retained raw reports."""

@@ -1,12 +1,13 @@
 """Select entities for Dreamegg Sunrise Controls."""
 
 from collections.abc import Iterable
+from datetime import timedelta
 from typing import Any, override
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -46,6 +47,7 @@ DEFAULT_OPTIONS = {
     DP_WORK_MODE: ["scene", "customize_scene", "colour"],
     DP_MUSIC_SET: list(MUSIC_NAMES),
 }
+SCAN_INTERVAL = timedelta(seconds=60)
 
 
 class DreameggSelect(DreameggEntity, SelectEntity):
@@ -61,12 +63,22 @@ class DreameggSelect(DreameggEntity, SelectEntity):
     ) -> None:
         """Initialize a Dreamegg select."""
         super().__init__(runtime, device.id, description)
+        self._attr_should_poll = description.key == DP_MUSIC_SET
+        self._local_available = False
         value_range = datapoint_values(device, description.key).get("range")
         self._attr_options = (
             [option for option in value_range if isinstance(option, str)]
             if isinstance(value_range, list)
             else DEFAULT_OPTIONS[description.key]
         )
+
+    @property
+    @override
+    def available(self) -> bool:
+        """Music requires a confirmed LAN connection; other selects use Tuya."""
+        if self.entity_description.key == DP_MUSIC_SET:
+            return self._local_available and self.device is not None
+        return super().available
 
     @property
     @override
@@ -92,6 +104,18 @@ class DreameggSelect(DreameggEntity, SelectEntity):
                     self._handle_music_update,
                 )
             )
+            await self.async_update()
+
+    @override
+    async def async_update(self) -> None:
+        """Refresh Music from the clock when the cloud omits its reports."""
+        if self.entity_description.key == DP_MUSIC_SET:
+            try:
+                await self._runtime.music.async_read(self._device_id)
+            except HomeAssistantError:
+                self._local_available = False
+            else:
+                self._local_available = True
 
     @callback
     def _handle_music_update(self, dp_id: int) -> None:
@@ -104,7 +128,17 @@ class DreameggSelect(DreameggEntity, SelectEntity):
         """Select an enum option."""
         if option not in self.options:
             raise ServiceValidationError("Unsupported Dreamegg selection")
-        await self._async_send_value(option)
+        if self.entity_description.key == DP_MUSIC_SET:
+            try:
+                await self._runtime.music.async_write(self._device_id, option)
+            except HomeAssistantError:
+                self._local_available = False
+                self.async_write_ha_state()
+                raise
+            self._local_available = True
+            self.async_write_ha_state()
+        else:
+            await self._async_send_value(option)
 
 
 async def async_setup_entry(

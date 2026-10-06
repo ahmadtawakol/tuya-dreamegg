@@ -1,7 +1,7 @@
 """Tests for Dreamegg number, select, and button entities."""
 
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from homeassistant.components.number import NumberDeviceClass
@@ -214,6 +214,8 @@ async def test_music_select_uses_full_product_schema_and_raw_reports(hass) -> No
     assert music.current_option is None
     music.hass = hass
     music.async_write_ha_state = Mock()
+    entry.runtime_data.music.async_read = AsyncMock(return_value="18")
+    entry.runtime_data.music.async_write = AsyncMock(return_value="10")
     await music.async_added_to_hass()
     manager.mq.emit(
         {
@@ -231,9 +233,8 @@ async def test_music_select_uses_full_product_schema_and_raw_reports(hass) -> No
     assert manager.send_commands.call_count == 0
     music.async_write_ha_state.assert_called_once_with()
     await music.async_select_option("10")
-    manager.send_commands.assert_called_once_with(
-        device.id, [{"code": "music_set", "value": "10"}]
-    )
+    entry.runtime_data.music.async_write.assert_awaited_once_with(device.id, "10")
+    manager.send_commands.assert_not_called()
     assert music.current_option == "18"
     device.status["music_set"] = "18"
     manager.mq.emit(

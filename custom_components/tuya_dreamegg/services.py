@@ -32,7 +32,7 @@ def _resolve_device(hass: HomeAssistant, registry_id: str) -> tuple[Any, Any]:
                 runtime = entry.runtime_data
                 device = runtime.device(device_id)
                 if device is not None and is_supported_device(device):
-                    return device, runtime.manager
+                    return device, runtime
     raise ServiceValidationError("Select a loaded Dreamegg Sunrise 1+ device")
 
 
@@ -142,16 +142,17 @@ def async_setup_services(hass: HomeAssistant) -> None:
         return
 
     async def async_test_music_transport(call: ServiceCall) -> dict[str, Any]:
-        device, manager = _resolve_device(hass, call.data["device_id"])
+        device, runtime = _resolve_device(hass, call.data["device_id"])
         transport = call.data["transport"]
         option = call.data["option"]
         if transport.startswith("local_"):
-            result = await hass.async_add_executor_job(
-                _test_local, device, transport, option
-            )
+            async with runtime.music.operation_lock:
+                result = await hass.async_add_executor_job(
+                    _test_local, device, transport, option
+                )
         else:
             result = await hass.async_add_executor_job(
-                _test_cloud, manager, device.id, transport, option
+                _test_cloud, runtime.manager, device.id, transport, option
             )
         return {"transport": transport, "dp_id": MUSIC_DP_ID, "option": option} | result
 

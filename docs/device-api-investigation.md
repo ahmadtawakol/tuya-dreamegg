@@ -179,3 +179,20 @@ The full schema also names DPs 6/7 as `bright_value`/`temp_value`, DP 13 as
 `customize_scene`, DP 14 as `customize_scene_set`, DP 15 as `wake_up_set`, and
 DP 112 as `alarm`. Those additional writable controls are not part of the Music
 selection change and their HA command behavior remains untested.
+
+### Verified HA local Music transport
+
+The live diagnostic action returned code `2008` for `music_set` and `1100` for
+the `dpId: 10` body through the existing cloud command endpoint. Its local probe
+found the same clock on HA's LAN with protocol 3.5 and an existing local key.
+The local test read DP 10 as `18`, wrote `10`, read `10` back, restored `18`, and
+read `18` back. The independent Tuya web socket emitted matching `notify_dp`
+reports for `10` and `18`.
+
+Version 0.6.0 uses this confirmed local transport for Music selection. The
+clock's current key is resolved from the official HA Tuya device object on each
+operation; no new credential is stored. The discovered IP/protocol is cached
+only in memory, with rediscovery after an error. The control writes only DP 10,
+verifies the actual value, and refreshes it once per minute. Other existing
+controls continue using their established cloud manager. The colour-light patch
+is retained in the same release.

@@ -43,6 +43,8 @@ Tuya light, switches, and volume control.
 - Home Assistant 2026.9.0 or newer
 - The official **Tuya** integration configured and loaded
 - The Dreamegg already visible in the official Tuya integration
+- For Music selection, HA must reach the clock on its LAN (Tuya TCP 6668 and
+  UDP discovery), and the existing Tuya device object must contain its local key
 
 ## Install with HACS
 
@@ -109,14 +111,19 @@ The integration stores only the config-entry ID of your official Tuya account.
 Commands and live updates use that integration's current Device Sharing manager,
 including after the official Tuya entry reloads.
 
-Music selection sends the confirmed `music_set` enum code with string values
-`1` through `34`. The reduced schema returned to HA omits this code; the full
-Tuya web panel schema includes it. Current selection is read from raw DP 10
-reports, with no optimistic state change before the clock reports a value.
+Music selection uses a local connection from HA to write numeric DP 10 with
+string enum values `1` through `34`. It reuses the local key already held by
+the official Tuya session and discovers the matching clock's LAN address and
+protocol automatically. Every change is verified by reading the device back.
+The select refreshes once per minute and also listens to raw reports; its state
+is never updated optimistically. Volume and playback switches remain separate.
 
 ### Music transport diagnostics
 
-The initial live HA Music command returned an error despite the confirmed code.
+The HA cloud gateway rejects the confirmed `music_set` code with error `2008`
+and a numeric `dpId` command body with `1100`. A local HA test on protocol 3.5
+successfully changed DP 10 from Campfire (`18`) to Rainstorm (`10`), read it back,
+and restored Campfire; the Tuya web panel independently reported both changes.
 Version 0.5.0 includes the **Dreamegg Sunrise Controls: Test music transport**
 action to report the exact cloud error and test DP 10 by numeric ID through the
 same authenticated endpoint. It also provides a read-only LAN probe and a

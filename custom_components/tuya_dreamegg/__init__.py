@@ -14,6 +14,7 @@ from .const import (
     PLATFORMS,
 )
 from .helpers import is_supported_device
+from .music_transport import LocalMusicTransport
 from .services import async_remove_services_if_unused, async_setup_services
 
 
@@ -24,10 +25,12 @@ class DreameggRuntimeData:
     hass: HomeAssistant
     tuya_entry_id: str
     capture: RawDpCapture = field(init=False)
+    music: LocalMusicTransport = field(init=False)
 
     def __post_init__(self) -> None:
         """Create the privacy-bounded raw datapoint capture."""
         self.capture = RawDpCapture(self.hass)
+        self.music = LocalMusicTransport(self.hass, self.capture, self.device)
 
     @property
     def manager(self) -> Any | None:
