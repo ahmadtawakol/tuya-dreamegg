@@ -49,6 +49,35 @@
           "scene": "Scene"
         }
       }
+    },
+    "sensor": {
+      "countdown_remaining": {
+        "name": "Countdown remaining"
+      },
+      "raw_brightness": {
+        "name": "Light brightness (raw)"
+      },
+      "raw_colour_temperature": {
+        "name": "Colour temperature (raw)"
+      },
+      "raw_music_selection": {
+        "name": "Music selection ID"
+      },
+      "raw_scene_selection": {
+        "name": "Scene selection ID"
+      },
+      "raw_customize_scene_set": {
+        "name": "Customize Scene Set (raw)"
+      },
+      "raw_dp_102": {
+        "name": "Unidentified DP 102"
+      },
+      "wake_up_set_enabled_slots": {
+        "name": "Wake Up Set enabled slots"
+      },
+      "alarm_set_enabled_slots": {
+        "name": "Alarm Set enabled slots"
+      }
     }
   }
 }

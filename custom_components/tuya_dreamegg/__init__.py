@@ -26,7 +26,7 @@ class DreameggRuntimeData:
 
     def __post_init__(self) -> None:
         """Create the privacy-bounded raw datapoint capture."""
-        self.capture = RawDpCapture()
+        self.capture = RawDpCapture(self.hass)
 
     @property
     def manager(self) -> Any | None:
@@ -34,7 +34,10 @@ class DreameggRuntimeData:
         entry = self.hass.config_entries.async_get_entry(self.tuya_entry_id)
         if entry is None or entry.state is not ConfigEntryState.LOADED:
             return None
-        return getattr(getattr(entry, "runtime_data", None), "manager", None)
+        manager = getattr(getattr(entry, "runtime_data", None), "manager", None)
+        if manager is not None:
+            self.capture.attach(manager)
+        return manager
 
     @property
     def device_map(self) -> Mapping[str, Any]:
@@ -65,9 +68,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: DreameggConfigEntry) -> 
         raise ConfigEntryNotReady("No supported Dreamegg devices were found")
 
     entry.runtime_data = runtime
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     runtime.capture.attach(runtime.manager)
     entry.async_on_unload(runtime.capture.detach)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 

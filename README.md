@@ -16,6 +16,12 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
 - **Time format** — 12-hour or 24-hour
 - **Work mode** — Scene, Custom scene, or Colour
 - **Stop** — a momentary button for the device's `stop` datapoint
+- **Countdown remaining** — read-only seconds from the clock's raw timer report
+- **Raw datapoint sensors** — observed light brightness, colour temperature,
+  music selection, scene selection, the opaque Customize Scene Set payload, and
+  unidentified DP 102, with no assumed units for raw values
+- **Wake Up Set / Alarm Set** — read-only enabled-slot counts with decoded
+  fields in entity attributes; no schedule write control is exposed
 
 The entities are attached to the same Home Assistant device as the official
 Tuya light, switches, and volume control.
@@ -59,13 +65,24 @@ Restart Home Assistant, then add **Dreamegg Sunrise Controls** from
 Remove the integration from **Settings → Devices & services**, uninstall it in
 HACS, and restart Home Assistant. The official Tuya entities are unaffected.
 
-Once Home Assistant Core includes these mappings in a release, remove this
-custom integration to avoid duplicate controls.
+Once Home Assistant Core includes these standard datapoint mappings in a
+release, remove this integration to avoid duplicate base controls. Keep it if
+you still need the alarm/routine diagnostics below.
 
-## Investigating app-only alarms and routines
+## Alarm and routine mapping status
 
-The Dreamegg app exposes alarm and routine fields that are not present in the
-standard Tuya device specification. To collect evidence safely:
+Diagnostics now capture two app-only schedule tables: raw DP 112 contains six
+alarm records, and raw DP 15 contains six routine records. The downloaded
+diagnostics decode the fields confirmed by controlled comparisons and retain
+unknown bytes for further mapping. A local payload builder can edit confirmed
+fields without overwriting the unknown bytes.
+
+These are not writable Home Assistant controls yet. The official Tuya
+Device-Sharing command interface sends datapoint codes, but these raw table DPs
+have no code in the device specification or local strategy. A verified outbound
+raw-DP route is needed before safely adding alarm or routine editors.
+
+To collect fresh evidence:
 
 1. Reload **Dreamegg Sunrise Controls** after installing or updating it.
 2. In the Dreamegg/D26 app, edit one alarm or routine and save it.

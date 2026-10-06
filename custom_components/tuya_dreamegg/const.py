@@ -18,5 +18,6 @@ DP_WORK_MODE = "work_mode"
 
 TUYA_DISCOVERY_NEW = "tuya_discovery_new"
 TUYA_UPDATE_ENTITY = "tuya_entry_update"
+TUYA_RAW_DP_UPDATE = "tuya_dreamegg_raw_dp_update"
 
-PLATFORMS = (Platform.NUMBER, Platform.SELECT, Platform.BUTTON)
+PLATFORMS = (Platform.NUMBER, Platform.SELECT, Platform.BUTTON, Platform.SENSOR)

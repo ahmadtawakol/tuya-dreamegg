@@ -1,5 +1,6 @@
 """Tests for Dreamegg capability diagnostics."""
 
+from base64 import b64encode
 from types import SimpleNamespace
 
 from homeassistant.components.diagnostics import REDACTED
@@ -36,6 +37,10 @@ async def test_diagnostics_capture_raw_reports_and_scenes(hass) -> None:
     runtime = DreameggRuntimeData(hass, official.entry_id)
     entry.runtime_data = runtime
     runtime.capture.attach(manager)
+    alarm_table = b64encode(
+        bytes.fromhex("01 01 04 00 00 00 00 00 00 03 e8 00 01 64 01 68 00 0f 1f 01")
+        + bytes(20 * 5)
+    ).decode()
 
     manager.mq.emit(
         {
@@ -48,6 +53,11 @@ async def test_diagnostics_capture_raw_reports_and_scenes(hass) -> None:
                         "dpId": 10,
                         "t": 1_700_000_000_001,
                         "value": {"alarm": "07:00"},
+                    },
+                    {
+                        "dpId": 112,
+                        "t": 1_700_000_000_002,
+                        "value": alarm_table,
                     },
                 ],
             },
@@ -80,7 +90,18 @@ async def test_diagnostics_capture_raw_reports_and_scenes(hass) -> None:
             "timestamp": 1_700_000_000_001,
             "value": {"alarm": "07:00"},
         },
+        {
+            "dp_id": 112,
+            "known_code": None,
+            "timestamp": 1_700_000_000_002,
+            "value": alarm_table,
+        },
     ]
+    alarm_slots = diagnostics["devices"][0]["schedule_tables"]["alarms"]
+    assert alarm_slots is not None
+    assert alarm_slots[0]["start_minute"] == 360
+    assert alarm_slots[0]["duration_minutes"] == 15
+    assert alarm_slots[0]["special_light_enabled"] is True
     assert diagnostics["devices"][0]["device_id"] == REDACTED
     assert diagnostics["tuya_scenes"] == [
         {

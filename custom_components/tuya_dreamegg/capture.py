@@ -6,18 +6,25 @@ from copy import deepcopy
 from threading import Lock
 from typing import Any
 
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.dispatcher import async_dispatcher_send
+
+from .const import TUYA_RAW_DP_UPDATE
 from .helpers import is_supported_device
 
 DEVICE_REPORT_PROTOCOL = 4
 MAX_REPORTS_PER_DEVICE = 200
+RAW_DP_ENTITY_IDS = frozenset({6, 7, 10, 13, 14, 15, 102, 104, 112})
 
 
 class RawDpCapture:
     """Capture raw reports only for supported Dreamegg devices in memory."""
 
-    def __init__(self) -> None:
+    def __init__(self, hass: HomeAssistant) -> None:
         """Initialize a raw report capture."""
+        self._hass = hass
         self._reports: dict[str, deque[dict[str, Any]]] = {}
+        self._latest_values: dict[str, dict[int, Any]] = {}
         self._device_strategies: dict[str, dict[str, Any]] = {}
         self._lock = Lock()
         self._message_source: Any | None = None
@@ -53,6 +60,8 @@ class RawDpCapture:
         if callable(remove_listener):
             remove_listener(self._capture_message)
         self._message_source = None
+        with self._lock:
+            self._latest_values.clear()
 
     def _capture_message(self, message: dict[str, Any]) -> None:
         """Retain bounded raw reports for supported clocks only."""
@@ -97,6 +106,26 @@ class RawDpCapture:
                 device_id, deque(maxlen=MAX_REPORTS_PER_DEVICE)
             )
             device_reports.extend(reports)
+            latest_values = self._latest_values.setdefault(device_id, {})
+            for report in reports:
+                dp_id = report["dp_id"]
+                if isinstance(dp_id, int):
+                    latest_values[dp_id] = report["value"]
+
+        for report in reports:
+            dp_id = report["dp_id"]
+            if dp_id in RAW_DP_ENTITY_IDS:
+                self._hass.add_job(
+                    async_dispatcher_send,
+                    self._hass,
+                    f"{TUYA_RAW_DP_UPDATE}_{device_id}",
+                    dp_id,
+                )
+
+    def latest_value(self, device_id: str, dp_id: int) -> Any | None:
+        """Return the most recent captured value for a datapoint."""
+        with self._lock:
+            return deepcopy(self._latest_values.get(device_id, {}).get(dp_id))
 
     def snapshot(self) -> dict[str, list[dict[str, Any]]]:
         """Return a stable copy of the retained raw reports."""

@@ -8,6 +8,7 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.core import HomeAssistant
 
 from . import DreameggConfigEntry
+from .schedules import decode_latest_schedule_reports
 
 TO_REDACT = {
     "asset_id",
@@ -58,6 +59,9 @@ async def async_get_config_entry_diagnostics(
             "product_id": getattr(device, "product_id", None),
             "product_name": getattr(device, "product_name", None),
             "raw_dp_reports": captured.get(device.id, []),
+            "schedule_tables": decode_latest_schedule_reports(
+                captured.get(device.id, [])
+            ),
             "status": getattr(device, "status", {}),
             "status_range": _serialize_specification(
                 getattr(device, "status_range", {})
