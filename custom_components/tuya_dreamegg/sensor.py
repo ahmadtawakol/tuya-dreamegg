@@ -17,7 +17,7 @@ from . import DreameggConfigEntry, DreameggRuntimeData
 from .const import TUYA_DISCOVERY_NEW, TUYA_RAW_DP_UPDATE
 from .entity import DreameggEntity
 from .helpers import is_supported_device
-from .music import MUSIC_NAMES
+from .music import VERIFIED_MUSIC_NAMES
 from .schedules import ROUTINE_NAMES, decode_schedule_payload
 
 COUNTDOWN_REMAINING_DP_ID = 104
@@ -127,7 +127,7 @@ class DreameggRawSensor(DreameggEntity, SensorEntity):
         attributes: dict[str, Any] = {"dp_id": self._dp_id}
         if self._dp_id == 10 and isinstance(self.native_value, int):
             attributes["music_id"] = self.native_value
-            if (name := MUSIC_NAMES.get(str(self.native_value))) is not None:
+            if (name := VERIFIED_MUSIC_NAMES.get(str(self.native_value))) is not None:
                 attributes["sound_name"] = name
         elif self._dp_id == 14:
             attributes["format"] = "base64 opaque scene configuration"

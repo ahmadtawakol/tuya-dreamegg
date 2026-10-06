@@ -20,7 +20,8 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
 - **Display brightness** — 0 to 100
 - **Time format** — 12-hour or 24-hour
 - **Work mode** — Scene, Custom scene, or Colour
-- **Music selection** — all 34 built-in sounds, from the full Tuya product schema
+- **Music selection** — all 34 firmware sound IDs, with confirmed names for
+  Campfire, Brown Noise 1, and Morning; other IDs show as Sound 1, Sound 2, etc.
 - **Stop** — a momentary button for the device's `stop` datapoint
 - **Countdown remaining** — read-only seconds from the clock's raw timer report
 - **Raw datapoint sensors** — observed light brightness, colour temperature,
@@ -122,8 +123,8 @@ is never updated optimistically. Volume and playback switches remain separate.
 
 The HA cloud gateway rejects the confirmed `music_set` code with error `2008`
 and a numeric `dpId` command body with `1100`. A local HA test on protocol 3.5
-successfully changed DP 10 from Campfire (`18`) to Rainstorm (`10`), read it back,
-and restored Campfire; the Tuya web panel independently reported both changes.
+successfully changed DP 10 from `18` to `10`, read it back, and restored `18`;
+the Tuya web panel independently reported both changes.
 Version 0.5.0 includes the **Dreamegg Sunrise Controls: Test music transport**
 action to report the exact cloud error and test DP 10 by numeric ID through the
 same authenticated endpoint. It also provides a read-only LAN probe and a
@@ -131,6 +132,12 @@ bounded local write test that reads the original selection, verifies a different
 selection, then restores the original. Local tests use the key already held by
 the official Tuya integration; keys are not stored or returned by this action.
 All transport diagnostics are restricted to supported clocks and Music DP 10.
+
+The desktop Tuya schema's sound names do not match this clock's firmware.
+Selecting Campfire in the actual Dreamegg app reports DP 10 value `10`; value
+`18` plays Brown Noise 1. Version 0.6.1 corrects these labels and retains the
+existing Morning (`32`) mapping. Unverified values use neutral Sound ID labels
+until confirmed against the native app, rather than the inaccurate stock names.
 
 This project uses internal details of Home Assistant's Tuya integration and may
 need an update if those internals change.

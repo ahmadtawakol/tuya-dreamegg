@@ -159,14 +159,17 @@ path is still required for the schedule/scene datapoints.
 Later on 2026-10-06, inspecting the authenticated web panel's own schema response
 revealed that DP 10 is a read/write enum with the command code `music_set`.
 The response is from `/open-api/v3.0/m/sdf/ss/panels/device/<id>/DESKTOP/component`.
-It supplies string values `1` through `34` and their sound labels. In particular,
-`10` is Rainstorm, `18` is Campfire, and `32` is Morning. These enum values must
-not be confused with the separate sound IDs inside alarm/routine records.
+It supplies string values `1` through `34` and stock sound labels. It names `10`
+Rainstorm and `18` Campfire; these names were initially trusted but later proved
+incorrect for the clock's firmware. The apparent difference from schedule sound
+IDs did not establish a separate sound enumeration. See the native app capture
+below for the correction.
 
 A bounded web test sent `ctrl_dp` over the panel socket with
 `{"dps":{"10":"10"},"protocol":5}`. The socket replied `ctrl_dp_res` with
 status `ok`, followed by a `notify_dp` report containing `{"10":"10"}`.
-Restoring Campfire sent `{"10":"18"}` and produced the corresponding report.
+Restoring the previous value sent `{"10":"18"}` and produced the corresponding
+report. This confirmed numeric writes, not the audible sound labels.
 
 Version 0.4.0 adds a Music selection entity that sends
 `{"code":"music_set","value":"<enum value>"}` through the existing official
@@ -196,3 +199,19 @@ only in memory, with rediscovery after an error. The control writes only DP 10,
 verifies the actual value, and refreshes it once per minute. Other existing
 controls continue using their established cloud manager. The colour-light patch
 is retained in the same release.
+
+### Native app sound labels supersede desktop stock labels
+
+After v0.6.0, the user reported that selecting HA's Campfire kept playing Brown
+Noise. HA and the clock both reported DP 10 `18`. The user then selected Campfire
+in the actual Dreamegg app, and the independent device socket reported
+`{"10":"10"}`. Thus Campfire is firmware value `10`; value `18` is Brown Noise 1,
+consistent with the native schedule mapping previously recorded. The existing
+Morning `32` match is retained.
+
+Version 0.6.1 corrects these labels in the select and diagnostic sensor. Other
+direct sound IDs remain available as Sound 1, Sound 2, etc. Their desktop stock
+names are removed until native app/playback evidence confirms them. The local
+transport itself required no change: it was writing and reading the requested
+numeric values correctly. Native capture fixtures prevent the desktop labels
+from being reintroduced accidentally.

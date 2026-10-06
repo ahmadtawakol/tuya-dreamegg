@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tuya-dreamegg"
-version = "0.6.0"
+version = "0.6.1"
 description = "Extra Home Assistant controls for Dreamegg Sunrise 1+ devices"
 requires-python = ">=3.14"
 dependencies = []

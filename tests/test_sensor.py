@@ -132,7 +132,7 @@ async def test_web_mapped_raw_datapoints_and_schedules_are_read_only_sensors(
         }
     )
     await hass.async_block_till_done()
-    assert raw_sensors[10].extra_state_attributes["sound_name"] == "Rainstorm"
+    assert raw_sensors[10].extra_state_attributes["sound_name"] == "Campfire"
     assert raw_sensors[13].native_value == 1
     assert raw_sensors[14].native_value == b64encode(b"scene-config").decode()
     assert raw_sensors[102].native_value == 1

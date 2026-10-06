@@ -1,39 +1,15 @@
-"""DP 10 values from the Sunrise 1+ Tuya web product schema."""
+"""DP 10 sound labels verified against the Dreamegg app and playback."""
 
 MUSIC_DP_ID = 10
-MUSIC_NAMES = {
-    "1": "White Noise",
-    "2": "Pink Noise",
-    "3": "Brown Noise",
-    "4": "Washing Machine",
-    "5": "Fan",
-    "6": "Floor Fan",
-    "7": "Wind",
-    "8": "Rainshed",
-    "9": "Rain",
-    "10": "Rainstorm",
-    "11": "Moderate Rain",
-    "12": "Sea Wave",
-    "13": "Stream",
-    "14": "Bird",
-    "15": "Cricket",
-    "16": "Frog",
-    "17": "Fireplace",
-    "18": "Campfire",
-    "19": "Fetal Monitoring",
-    "20": "Shushing",
-    "21": "Coffee Shop",
-    "22": "Handbell",
-    "23": "Clock",
-    "24": "Zen",
-    "25": "Wind Chime",
-    "26": "Steamship",
-    "27": "Aircraft",
-    "28": "Train",
-    "29": "Lullaby",
-    "30": "Music Box",
-    "31": "Night",
+
+# Desktop Tuya enum labels are not accurate for this firmware. Preserve all
+# valid sound values, but name only those backed by native app/playback evidence.
+VERIFIED_MUSIC_NAMES = {
+    "10": "Campfire",
+    "18": "Brown Noise 1",
     "32": "Morning",
-    "33": "Fantasy",
-    "34": "Cheerful",
+}
+MUSIC_NAMES = {
+    str(music_id): VERIFIED_MUSIC_NAMES.get(str(music_id), f"Sound {music_id}")
+    for music_id in range(1, 35)
 }

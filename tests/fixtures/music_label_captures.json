@@ -1,0 +1,20 @@
+[
+  {
+    "dp_id": 10,
+    "value": "10",
+    "label": "Campfire",
+    "evidence": "User selected Campfire in the Dreamegg app; independent notify_dp reported 10=10"
+  },
+  {
+    "dp_id": 10,
+    "value": "18",
+    "label": "Brown Noise 1",
+    "evidence": "Physical Brown Noise playback at DP10=18; native schedule capture names sound18 Brown Noise1"
+  },
+  {
+    "dp_id": 10,
+    "value": "32",
+    "label": "Morning",
+    "evidence": "Existing direct DP10 value32 matches native Morning sound32 and web label"
+  }
+]

@@ -23,7 +23,7 @@ test_music_transport:
             - local_test
     option:
       name: Music value
-      description: String enum 1–34; 10 is Rainstorm, 18 is Campfire.
+      description: String enum 1–34; 10 is Campfire, 18 is Brown Noise 1.
       default: "18"
       selector:
         text:
