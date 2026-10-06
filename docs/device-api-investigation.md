@@ -152,5 +152,30 @@ These are useful for HA dashboards and future mapping but do not send commands.
 The official Tuya Device Sharing manager currently sends commands by datapoint
 code, and IDs 6, 7, 10, 13, 14, 15, 102, and 112 are absent from the device's
 advertised `function`/`local_strategy` command map. A verified outbound raw-DP
-path is still required before writable controls for those datapoints can be
-added safely.
+path is still required for the schedule/scene datapoints.
+
+### Full web product schema and Music selection
+
+Later on 2026-10-06, inspecting the authenticated web panel's own schema response
+revealed that DP 10 is a read/write enum with the command code `music_set`.
+The response is from `/open-api/v3.0/m/sdf/ss/panels/device/<id>/DESKTOP/component`.
+It supplies string values `1` through `34` and their sound labels. In particular,
+`10` is Rainstorm, `18` is Campfire, and `32` is Morning. These enum values must
+not be confused with the separate sound IDs inside alarm/routine records.
+
+A bounded web test sent `ctrl_dp` over the panel socket with
+`{"dps":{"10":"10"},"protocol":5}`. The socket replied `ctrl_dp_res` with
+status `ok`, followed by a `notify_dp` report containing `{"10":"10"}`.
+Restoring Campfire sent `{"10":"18"}` and produced the corresponding report.
+
+Version 0.4.0 adds a Music selection entity that sends
+`{"code":"music_set","value":"<enum value>"}` through the existing official
+HA Tuya manager. It reads selection from raw DP 10 reports because HA's reduced
+function/strategy schema omits this code. No optimistic state is set after a
+command; the select updates when a report arrives. Live HA transport validation
+is required in addition to the verified web write.
+
+The full schema also names DPs 6/7 as `bright_value`/`temp_value`, DP 13 as
+`customize_scene`, DP 14 as `customize_scene_set`, DP 15 as `wake_up_set`, and
+DP 112 as `alarm`. Those additional writable controls are not part of the Music
+selection change and their HA command behavior remains untested.

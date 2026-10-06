@@ -15,6 +15,7 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
 - **Display brightness** — 0 to 100
 - **Time format** — 12-hour or 24-hour
 - **Work mode** — Scene, Custom scene, or Colour
+- **Music selection** — all 34 built-in sounds, from the full Tuya product schema
 - **Stop** — a momentary button for the device's `stop` datapoint
 - **Countdown remaining** — read-only seconds from the clock's raw timer report
 - **Raw datapoint sensors** — observed light brightness, colour temperature,
@@ -77,10 +78,10 @@ diagnostics decode the fields confirmed by controlled comparisons and retain
 unknown bytes for further mapping. A local payload builder can edit confirmed
 fields without overwriting the unknown bytes.
 
-These are not writable Home Assistant controls yet. The official Tuya
-Device-Sharing command interface sends datapoint codes, but these raw table DPs
-have no code in the device specification or local strategy. A verified outbound
-raw-DP route is needed before safely adding alarm or routine editors.
+These are not writable Home Assistant controls yet. The full Tuya web product
+schema identifies the table codes as `wake_up_set` and `alarm`, but their write
+transport and payload semantics still need live validation before alarm or
+routine editors can be exposed.
 
 To collect fresh evidence:
 
@@ -102,6 +103,11 @@ the evidence, likely API boundaries, and controlled capture procedure.
 The integration stores only the config-entry ID of your official Tuya account.
 Commands and live updates use that integration's current Device Sharing manager,
 including after the official Tuya entry reloads.
+
+Music selection sends the confirmed `music_set` enum code with string values
+`1` through `34`. The reduced schema returned to HA omits this code; the full
+Tuya web panel schema includes it. Current selection is read from raw DP 10
+reports, with no optimistic state change before the clock reports a value.
 
 This project uses internal details of Home Assistant's Tuya integration and may
 need an update if those internals change.

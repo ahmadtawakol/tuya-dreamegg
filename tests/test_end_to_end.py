@@ -49,6 +49,7 @@ async def test_full_setup_commands_updates_and_unload(hass) -> None:
         "number.bedroom_dreamegg_display_brightness",
         "select.bedroom_dreamegg_time_format",
         "select.bedroom_dreamegg_work_mode",
+        "select.bedroom_dreamegg_music_selection",
         "button.bedroom_dreamegg_stop",
     }
     assert all(hass.states.get(entity_id) is not None for entity_id in entity_ids)

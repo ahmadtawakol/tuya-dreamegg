@@ -19,7 +19,7 @@ def test_manifest_and_hacs_versions_match() -> None:
     hacs = _load_json(ROOT / "hacs.json")
 
     assert manifest["domain"] == "tuya_dreamegg"
-    assert manifest["version"] == "0.3.0"
+    assert manifest["version"] == "0.4.0"
     assert manifest["after_dependencies"] == ["tuya"]
     assert hacs["homeassistant"] == "2026.9.0"
 

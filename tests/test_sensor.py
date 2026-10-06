@@ -122,6 +122,17 @@ async def test_web_mapped_raw_datapoints_and_schedules_are_read_only_sensors(
     assert raw_sensors[7].native_value == 20
     assert raw_sensors[10].native_value == 32
     assert raw_sensors[10].extra_state_attributes["sound_name"] == "Morning"
+    manager.mq.emit(
+        {
+            "protocol": 4,
+            "data": {
+                "devId": device.id,
+                "status": [{"dpId": 10, "t": 1_700_000_000_009, "value": "10"}],
+            },
+        }
+    )
+    await hass.async_block_till_done()
+    assert raw_sensors[10].extra_state_attributes["sound_name"] == "Rainstorm"
     assert raw_sensors[13].native_value == 1
     assert raw_sensors[14].native_value == b64encode(b"scene-config").decode()
     assert raw_sensors[102].native_value == 1
@@ -129,7 +140,9 @@ async def test_web_mapped_raw_datapoints_and_schedules_are_read_only_sensors(
     assert raw_sensors[15].extra_state_attributes["slots"][0]["name"] == "Okay to Wake"
     assert raw_sensors[112].native_value == 2
     for sensor in entities:
-        sensor.async_write_ha_state.assert_called_once_with()
+        assert sensor.async_write_ha_state.call_count == (
+            2 if sensor._dp_id == 10 else 1
+        )
 
 
 def _schedule_payload() -> str:

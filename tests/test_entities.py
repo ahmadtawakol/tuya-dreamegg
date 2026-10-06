@@ -3,8 +3,10 @@
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import pytest
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.const import UnitOfTime
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -190,4 +192,58 @@ async def test_new_supported_device_is_discovered(hass) -> None:
     } == {
         (second.id, "time_mode"),
         (second.id, "work_mode"),
+        (second.id, "music_set"),
     }
+
+
+async def test_music_select_uses_full_product_schema_and_raw_reports(hass) -> None:
+    """Music works despite being absent from the reduced HA function schema."""
+    device = dreamegg_device()
+    assert "music_set" not in device.function
+    official, manager = official_entry([device])
+    official.add_to_hass(hass)
+    entry = _custom_entry(hass, official)
+    add_entities = Mock()
+    await select_platform.async_setup_entry(hass, entry, add_entities)
+    music = next(
+        entity
+        for entity in add_entities.call_args.args[0]
+        if entity.entity_description.key == "music_set"
+    )
+    assert music.options == [str(value) for value in range(1, 35)]
+    assert music.current_option is None
+    music.hass = hass
+    music.async_write_ha_state = Mock()
+    await music.async_added_to_hass()
+    manager.mq.emit(
+        {
+            "protocol": 4,
+            "data": {
+                "devId": device.id,
+                "status": [{"dpId": 10, "t": 1, "value": "18"}],
+            },
+        }
+    )
+    await hass.async_block_till_done()
+    assert music.current_option == "18"
+    with pytest.raises(ServiceValidationError):
+        await music.async_select_option("35")
+    assert manager.send_commands.call_count == 0
+    music.async_write_ha_state.assert_called_once_with()
+    await music.async_select_option("10")
+    manager.send_commands.assert_called_once_with(
+        device.id, [{"code": "music_set", "value": "10"}]
+    )
+    assert music.current_option == "18"
+    device.status["music_set"] = "18"
+    manager.mq.emit(
+        {
+            "protocol": 4,
+            "data": {
+                "devId": device.id,
+                "status": [{"dpId": 10, "t": 2, "value": "10"}],
+            },
+        }
+    )
+    await hass.async_block_till_done()
+    assert music.current_option == "10"

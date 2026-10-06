@@ -12,6 +12,7 @@ SUPPORTED_PRODUCT_IDS = frozenset({"yible1syyda3s5iv"})
 
 DP_BACKLIGHT = "backlight"
 DP_COUNTDOWN = "countdown"
+DP_MUSIC_SET = "music_set"
 DP_STOP = "stop"
 DP_TIME_MODE = "time_mode"
 DP_WORK_MODE = "work_mode"
