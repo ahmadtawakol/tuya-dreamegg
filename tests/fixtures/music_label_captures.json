@@ -1,9 +1,105 @@
 [
   {
     "dp_id": 10,
+    "value": "1",
+    "label": "Birds",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "2",
+    "label": "Sea Wave",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "3",
+    "label": "Gentle Surf",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "4",
+    "label": "Stream",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "5",
+    "label": "Brook",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "6",
+    "label": "Waterfall",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "7",
+    "label": "Gentle Rain",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "8",
+    "label": "Rainstorm",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "9",
+    "label": "Wind Chimes",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
     "value": "10",
     "label": "Campfire",
     "evidence": "User selected Campfire in the Dreamegg app; independent notify_dp reported 10=10"
+  },
+  {
+    "dp_id": 10,
+    "value": "11",
+    "label": "Cricket",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "12",
+    "label": "Rustling Leaves",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "13",
+    "label": "Womb Sound",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "14",
+    "label": "Shushing",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "15",
+    "label": "White Noise",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "16",
+    "label": "Pink Noise 1",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "17",
+    "label": "Pink Noise 2",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
   },
   {
     "dp_id": 10,
@@ -13,9 +109,93 @@
   },
   {
     "dp_id": 10,
+    "value": "19",
+    "label": "Brown Noise 2",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "20",
+    "label": "Green Noise",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "21",
+    "label": "Giant Fan",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "22",
+    "label": "Box Fan",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "23",
+    "label": "Oscillating Fan",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "24",
+    "label": "Ventilation Fan",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "25",
+    "label": "Airplane Fan",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "26",
+    "label": "Little Star",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "27",
+    "label": "Brahms Lullaby",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "28",
+    "label": "Healing",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "29",
+    "label": "Meditation",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "30",
+    "label": "Zen",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
+    "value": "31",
+    "label": "Mozart",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
+  },
+  {
+    "dp_id": 10,
     "value": "32",
     "label": "Morning",
     "evidence": "Existing direct DP10 value32 matches native Morning sound32 and web label"
+  },
+  {
+    "dp_id": 10,
+    "value": "33",
+    "label": "Piano",
+    "evidence": "User confirmed the native Dreamegg app sound ID list on 2026-10-06"
   },
   {
     "dp_id": 10,

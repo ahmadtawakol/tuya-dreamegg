@@ -5,6 +5,8 @@ from binascii import Error as Base64DecodeError
 from collections.abc import Mapping
 from typing import Any
 
+from .music import VERIFIED_MUSIC_NAMES
+
 SCHEDULE_RECORD_COUNT = 6
 SCHEDULE_RECORD_SIZE = 20
 SCHEDULE_PAYLOAD_SIZE = SCHEDULE_RECORD_COUNT * SCHEDULE_RECORD_SIZE
@@ -16,15 +18,7 @@ ROUTINE_NAMES = (
     "Wind Down",
     "Bed Time",
 )
-SOUND_NAMES = {
-    1: "Bird",
-    2: "Sea Wave",
-    8: "Rainstorm",
-    15: "White Noise",
-    18: "Brown Noise 1",
-    20: "Green Noise",
-    32: "Morning",
-}
+SOUND_NAMES = {int(code): name for code, name in VERIFIED_MUSIC_NAMES.items()}
 LIGHT_MODE_NAMES = {2: "Solid Color", 3: "Sunlight", 4: "Sunrise"}
 
 

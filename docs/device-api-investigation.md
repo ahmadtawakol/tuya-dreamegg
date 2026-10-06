@@ -220,3 +220,11 @@ The user additionally selected Harp in the native app, which the independent
 socket reported as `{"10":"34"}`. The old desktop label called `34` Cheerful.
 Version 0.6.2 corrects it to Harp; the subsequent native Campfire selection
 reported `{"10":"10"}` again.
+
+The user subsequently supplied the complete native sound ID list, 1–34, and
+clarified that ID 17 is Pink Noise 2. Version 0.6.3 applies that catalog to the
+Music select, its diagnostic sensor, and decoded alarm/routine sound fields.
+The native catalog also matches the previously observed schedule sound IDs;
+these consumers now share one source map. Numeric command values and transport
+behavior are unchanged. All 34 labels are covered by the native source fixture
+and translation/schedule regression checks.
