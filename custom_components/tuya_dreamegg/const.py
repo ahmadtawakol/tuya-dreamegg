@@ -11,14 +11,23 @@ SUPPORTED_CATEGORY = "bzyd"
 SUPPORTED_PRODUCT_IDS = frozenset({"yible1syyda3s5iv"})
 
 DP_BACKLIGHT = "backlight"
+DP_COLOUR_DATA = "colour_data"
 DP_COUNTDOWN = "countdown"
 DP_MUSIC_SET = "music_set"
 DP_STOP = "stop"
+DP_SWITCH_LED = "switch_led"
 DP_TIME_MODE = "time_mode"
 DP_WORK_MODE = "work_mode"
+WORK_MODE_COLOUR = "colour"
 
 TUYA_DISCOVERY_NEW = "tuya_discovery_new"
 TUYA_UPDATE_ENTITY = "tuya_entry_update"
 TUYA_RAW_DP_UPDATE = "tuya_dreamegg_raw_dp_update"
 
-PLATFORMS = (Platform.NUMBER, Platform.SELECT, Platform.BUTTON, Platform.SENSOR)
+PLATFORMS = (
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.BUTTON,
+    Platform.SENSOR,
+    Platform.LIGHT,
+)

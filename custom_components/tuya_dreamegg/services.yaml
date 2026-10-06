@@ -1,0 +1,29 @@
+test_music_transport:
+  name: Test music transport
+  description: >-
+    Tests only Music DP 10 using the existing Tuya session. Code and DP ID modes
+    send the selected value to the clock. Local probe only reads; local test
+    writes, reads back, and restores the original selection.
+  fields:
+    device_id:
+      name: Device
+      required: true
+      selector:
+        device:
+          integration: tuya
+    transport:
+      name: Transport
+      required: true
+      selector:
+        select:
+          options:
+            - code
+            - dp_id
+            - local_probe
+            - local_test
+    option:
+      name: Music value
+      description: String enum 1–34; 10 is Rainstorm, 18 is Campfire.
+      default: "18"
+      selector:
+        text:

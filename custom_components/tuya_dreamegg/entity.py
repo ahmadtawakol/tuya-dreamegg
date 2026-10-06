@@ -8,6 +8,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity, EntityDescription
+from tuya_sharing.exceptions import ApiRequestException
 
 from . import DreameggRuntimeData
 from .const import TUYA_DOMAIN, TUYA_UPDATE_ENTITY
@@ -89,6 +90,12 @@ class DreameggEntity(Entity):
 
     async def _async_send_value(self, value: bool | int | str) -> None:
         """Send one datapoint command through the official Tuya manager."""
+        await self._async_send_commands(
+            [{"code": self.entity_description.key, "value": value}]
+        )
+
+    async def _async_send_commands(self, commands: list[dict[str, Any]]) -> None:
+        """Send datapoint commands through the official Tuya manager."""
         manager = self._runtime.manager
         send_commands = getattr(manager, "send_commands", None)
         if not callable(send_commands) or self.device is None:
@@ -97,8 +104,12 @@ class DreameggEntity(Entity):
             await self.hass.async_add_executor_job(
                 send_commands,
                 self._device_id,
-                [{"code": self.entity_description.key, "value": value}],
+                commands,
             )
+        except ApiRequestException as error:
+            raise HomeAssistantError(
+                f"Tuya rejected the command ({error.error_code}): {error.error_message}"
+            ) from error
         except Exception as error:
             raise HomeAssistantError(
                 "Unable to send the command to Dreamegg"

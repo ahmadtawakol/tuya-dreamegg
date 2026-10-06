@@ -8,6 +8,6 @@
   "integration_type": "hub",
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/ahmadtawakol/tuya-dreamegg/issues",
-  "requirements": [],
-  "version": "0.4.0"
+  "requirements": ["tinytuya==1.20.0"],
+  "version": "0.5.0"
 }

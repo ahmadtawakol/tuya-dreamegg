@@ -11,6 +11,11 @@ pair the clock again.
 
 For every supported Dreamegg in the selected Tuya account, the integration adds:
 
+- **Colour light** — the lamp in colour mode on the clock's own 0–1000 scale.
+  The official Tuya light assumes 0–255, so it tops out at about a quarter of
+  the lamp's brightness and saturation and reports out-of-range values. Use
+  this entity for automations that need full brightness or saturated colours.
+  Turning it on with a colour switches the clock's work mode to Colour.
 - **Countdown** — 0 to 1,440 minutes
 - **Display brightness** — 0 to 100
 - **Time format** — 12-hour or 24-hour
@@ -108,6 +113,17 @@ Music selection sends the confirmed `music_set` enum code with string values
 `1` through `34`. The reduced schema returned to HA omits this code; the full
 Tuya web panel schema includes it. Current selection is read from raw DP 10
 reports, with no optimistic state change before the clock reports a value.
+
+### Music transport diagnostics
+
+The initial live HA Music command returned an error despite the confirmed code.
+Version 0.5.0 includes the **Dreamegg Sunrise Controls: Test music transport**
+action to report the exact cloud error and test DP 10 by numeric ID through the
+same authenticated endpoint. It also provides a read-only LAN probe and a
+bounded local write test that reads the original selection, verifies a different
+selection, then restores the original. Local tests use the key already held by
+the official Tuya integration; keys are not stored or returned by this action.
+All transport diagnostics are restricted to supported clocks and Music DP 10.
 
 This project uses internal details of Home Assistant's Tuya integration and may
 need an update if those internals change.

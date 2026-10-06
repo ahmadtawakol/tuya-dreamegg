@@ -25,6 +25,11 @@
         "name": "Stop"
       }
     },
+    "light": {
+      "colour_light": {
+        "name": "Colour light"
+      }
+    },
     "number": {
       "countdown": {
         "name": "Countdown"

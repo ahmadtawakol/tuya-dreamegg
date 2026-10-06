@@ -14,6 +14,7 @@ from .const import (
     PLATFORMS,
 )
 from .helpers import is_supported_device
+from .services import async_remove_services_if_unused, async_setup_services
 
 
 @dataclass(slots=True)
@@ -71,9 +72,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: DreameggConfigEntry) -> 
     runtime.capture.attach(runtime.manager)
     entry.async_on_unload(runtime.capture.detach)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    async_setup_services(hass)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: DreameggConfigEntry) -> bool:
     """Unload Dreamegg controls."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        async_remove_services_if_unused(hass, entry.entry_id)
+    return unloaded

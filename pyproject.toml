@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tuya-dreamegg"
-version = "0.4.0"
+version = "0.5.0"
 description = "Extra Home Assistant controls for Dreamegg Sunrise 1+ devices"
 requires-python = ">=3.14"
 dependencies = []
@@ -17,6 +17,7 @@ test = [
   "ruff==0.16.9",
   "tuya-device-handlers==0.0.27",
   "tuya-device-sharing-sdk==0.2.15",
+  "tinytuya==1.20.0",
 ]
 
 [tool.pytest.ini_options]
