@@ -16,5 +16,11 @@
     "value": "32",
     "label": "Morning",
     "evidence": "Existing direct DP10 value32 matches native Morning sound32 and web label"
+  },
+  {
+    "dp_id": 10,
+    "value": "34",
+    "label": "Harp",
+    "evidence": "User selected Harp in the Dreamegg app; independent notify_dp reported 10=34"
   }
 ]

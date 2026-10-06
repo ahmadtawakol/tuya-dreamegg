@@ -21,7 +21,7 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
 - **Time format** — 12-hour or 24-hour
 - **Work mode** — Scene, Custom scene, or Colour
 - **Music selection** — all 34 firmware sound IDs, with confirmed names for
-  Campfire, Brown Noise 1, and Morning; other IDs show as Sound 1, Sound 2, etc.
+  Campfire, Brown Noise 1, Morning, and Harp; other IDs show as Sound 1, Sound 2, etc.
 - **Stop** — a momentary button for the device's `stop` datapoint
 - **Countdown remaining** — read-only seconds from the clock's raw timer report
 - **Raw datapoint sensors** — observed light brightness, colour temperature,
@@ -136,7 +136,8 @@ All transport diagnostics are restricted to supported clocks and Music DP 10.
 The desktop Tuya schema's sound names do not match this clock's firmware.
 Selecting Campfire in the actual Dreamegg app reports DP 10 value `10`; value
 `18` plays Brown Noise 1. Version 0.6.1 corrects these labels and retains the
-existing Morning (`32`) mapping. Unverified values use neutral Sound ID labels
+existing Morning (`32`) mapping. Version 0.6.2 also adds the native-confirmed
+Harp (`34`) label. Unverified values use neutral Sound ID labels
 until confirmed against the native app, rather than the inaccurate stock names.
 
 This project uses internal details of Home Assistant's Tuya integration and may

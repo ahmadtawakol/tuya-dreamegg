@@ -215,3 +215,8 @@ names are removed until native app/playback evidence confirms them. The local
 transport itself required no change: it was writing and reading the requested
 numeric values correctly. Native capture fixtures prevent the desktop labels
 from being reintroduced accidentally.
+
+The user additionally selected Harp in the native app, which the independent
+socket reported as `{"10":"34"}`. The old desktop label called `34` Cheerful.
+Version 0.6.2 corrects it to Harp; the subsequent native Campfire selection
+reported `{"10":"10"}` again.

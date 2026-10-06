@@ -8,6 +8,7 @@ VERIFIED_MUSIC_NAMES = {
     "10": "Campfire",
     "18": "Brown Noise 1",
     "32": "Morning",
+    "34": "Harp",
 }
 MUSIC_NAMES = {
     str(music_id): VERIFIED_MUSIC_NAMES.get(str(music_id), f"Sound {music_id}")
