@@ -67,7 +67,16 @@ class LocalMusicTransport:
                     return value
         raise HomeAssistantError("The clock did not return a valid Music DP 10 value")
 
-    def _operate(self, device: Any, option: str | None) -> str:
+    def forget_clock(self, device_id: str) -> None:
+        """Drop a cached LAN endpoint so the next session rediscovers the clock."""
+        self._endpoints.pop(device_id, None)
+
+    def open_clock(self, device: Any) -> Any:
+        """Open a LAN session to one clock. Blocking: call from the executor.
+
+        The light transport shares this session factory, endpoint cache and
+        ``operation_lock`` so the clock only ever sees one local session.
+        """
         key = getattr(device, "local_key", None)
         if not isinstance(key, str) or not key:
             raise HomeAssistantError("Tuya did not provide this clock's local key")
@@ -101,18 +110,21 @@ class LocalMusicTransport:
                 )
             self._endpoints[device.id] = (address, version)
         address, version = self._endpoints[device.id]
+        return tinytuya.Device(
+            device.id,
+            address=address,
+            local_key=key,
+            version=version,
+            connection_timeout=3,
+            connection_retry_limit=1,
+            connection_retry_delay=0,
+            persist=True,
+        )
+
+    def _operate(self, device: Any, option: str | None) -> str:
         clock = None
         try:
-            clock = tinytuya.Device(
-                device.id,
-                address=address,
-                local_key=key,
-                version=version,
-                connection_timeout=3,
-                connection_retry_limit=1,
-                connection_retry_delay=0,
-                persist=True,
-            )
+            clock = self.open_clock(device)
             value = self._read_music(clock)
             if option is not None and value != option:
                 clock.set_value(MUSIC_DP_ID, option)
@@ -123,10 +135,10 @@ class LocalMusicTransport:
                     )
             return value
         except HomeAssistantError:
-            self._endpoints.pop(device.id, None)
+            self.forget_clock(device.id)
             raise
         except Exception as error:
-            self._endpoints.pop(device.id, None)
+            self.forget_clock(device.id)
             raise HomeAssistantError(
                 "Unable to contact the clock on the local network"
             ) from error

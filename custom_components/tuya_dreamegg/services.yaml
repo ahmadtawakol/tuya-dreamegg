@@ -27,3 +27,54 @@ test_music_transport:
       default: "18"
       selector:
         text:
+test_light_transport:
+  name: Test light transport
+  description: >-
+    Reads the lamp's hidden light mode (DP 4), brightness (DP 6) and colour
+    temperature (DP 7) over the LAN. Local probe only reads. Local test writes
+    the values you give, reports what the clock read back, and by default puts
+    the lamp back as it was.
+  fields:
+    device_id:
+      name: Device
+      required: true
+      selector:
+        device:
+          integration: tuya
+    transport:
+      name: Transport
+      required: true
+      selector:
+        select:
+          options:
+            - local_probe
+            - local_test
+    colour_temperature:
+      name: Colour temperature
+      description: Raw 0–1000 value for DP 7. 0 is assumed to be the warm end.
+      selector:
+        number:
+          min: 0
+          max: 1000
+          mode: box
+    brightness:
+      name: Brightness
+      description: Raw 10–1000 value for DP 6.
+      selector:
+        number:
+          min: 10
+          max: 1000
+          mode: box
+    light_mode:
+      name: Light mode
+      description: >-
+        Optional raw string for DP 4, to try a candidate white-light mode value
+        such as "white". Lower-case letters and underscores only.
+      selector:
+        text:
+    restore:
+      name: Restore
+      description: Put the lamp back as it was after a local test.
+      default: true
+      selector:
+        boolean:

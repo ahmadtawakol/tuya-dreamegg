@@ -84,7 +84,7 @@ async def test_web_mapped_raw_datapoints_and_schedules_are_read_only_sensors(
     await sensor_platform.async_setup_entry(hass, entry, add_entities)
     entities = add_entities.call_args.args[0]
     raw_sensors = {entity._dp_id: entity for entity in entities}
-    assert {6, 7, 10, 13, 14, 15, 102, 104, 112} <= raw_sensors.keys()
+    assert {4, 6, 7, 10, 13, 14, 15, 102, 104, 112} <= raw_sensors.keys()
     assert raw_sensors[6].native_unit_of_measurement is None
     assert raw_sensors[7].native_unit_of_measurement is None
 
@@ -99,6 +99,7 @@ async def test_web_mapped_raw_datapoints_and_schedules_are_read_only_sensors(
             "data": {
                 "devId": device.id,
                 "status": [
+                    {"dpId": 4, "t": 1_699_999_999_999, "value": "sunrise"},
                     {"dpId": 6, "t": 1_700_000_000_000, "value": 130},
                     {"dpId": 7, "t": 1_700_000_000_001, "value": 20},
                     {"dpId": 10, "t": 1_700_000_000_002, "value": "32"},
@@ -118,6 +119,7 @@ async def test_web_mapped_raw_datapoints_and_schedules_are_read_only_sensors(
     )
     await hass.async_block_till_done()
 
+    assert raw_sensors[4].native_value == "sunrise"
     assert raw_sensors[6].native_value == 130
     assert raw_sensors[7].native_value == 20
     assert raw_sensors[10].native_value == 32

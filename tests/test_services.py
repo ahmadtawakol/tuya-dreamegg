@@ -1,9 +1,10 @@
 """Tests for bounded Music DP 10 transport diagnostics."""
 
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+import voluptuous as vol
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -15,6 +16,7 @@ from custom_components.tuya_dreamegg.const import (
     TUYA_DOMAIN,
 )
 from custom_components.tuya_dreamegg.services import (
+    TEST_LIGHT_TRANSPORT,
     TEST_MUSIC_TRANSPORT,
     _test_cloud,
     _test_local,
@@ -168,5 +170,66 @@ async def test_action_uses_loaded_account_and_unregisters_on_unload(hass) -> Non
             blocking=True,
             return_response=True,
         )
+    light_test = entry.runtime_data.light.async_test = AsyncMock(
+        return_value={"before": {"light_mode": "color"}}
+    )
+    assert await hass.services.async_call(
+        DOMAIN,
+        TEST_LIGHT_TRANSPORT,
+        {
+            "device_id": registry_device.id,
+            "transport": "local_probe",
+            "colour_temperature": 0,
+        },
+        blocking=True,
+        return_response=True,
+    ) == {"transport": "local_probe", "before": {"light_mode": "color"}}
+    light_test.assert_awaited_once_with(device.id, restore=True)
+    light_test.reset_mock()
+    await hass.services.async_call(
+        DOMAIN,
+        TEST_LIGHT_TRANSPORT,
+        {
+            "device_id": registry_device.id,
+            "transport": "local_test",
+            "colour_temperature": 0,
+            "brightness": 400.0,
+            "light_mode": "white",
+            "restore": False,
+        },
+        blocking=True,
+        return_response=True,
+    )
+    light_test.assert_awaited_once_with(
+        device.id,
+        restore=False,
+        colour_temperature=0,
+        brightness=400,
+        light_mode="white",
+    )
+    light_test.reset_mock()
+    with pytest.raises(ServiceValidationError, match="needs a colour temperature"):
+        await hass.services.async_call(
+            DOMAIN,
+            TEST_LIGHT_TRANSPORT,
+            {"device_id": registry_device.id, "transport": "local_test"},
+            blocking=True,
+            return_response=True,
+        )
+    for invalid in (
+        {"brightness": 5},
+        {"colour_temperature": 1001},
+        {"light_mode": "A"},
+    ):
+        with pytest.raises(vol.Invalid):
+            await hass.services.async_call(
+                DOMAIN,
+                TEST_LIGHT_TRANSPORT,
+                {"device_id": registry_device.id, "transport": "local_test"} | invalid,
+                blocking=True,
+                return_response=True,
+            )
+    light_test.assert_not_awaited()
     assert await hass.config_entries.async_unload(entry.entry_id)
     assert not hass.services.has_service(DOMAIN, TEST_MUSIC_TRANSPORT)
+    assert not hass.services.has_service(DOMAIN, TEST_LIGHT_TRANSPORT)

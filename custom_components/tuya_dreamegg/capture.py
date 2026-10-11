@@ -15,7 +15,7 @@ from .helpers import is_supported_device
 
 DEVICE_REPORT_PROTOCOL = 4
 MAX_REPORTS_PER_DEVICE = 200
-RAW_DP_ENTITY_IDS = frozenset({6, 7, 10, 13, 14, 15, 102, 104, 112})
+RAW_DP_ENTITY_IDS = frozenset({4, 6, 7, 10, 13, 14, 15, 102, 104, 112})
 
 
 class RawDpCapture:
@@ -130,20 +130,26 @@ class RawDpCapture:
 
     def record_local_music(self, device_id: str, value: str) -> None:
         """Record a device-confirmed LAN readback, never an optimistic write."""
+        self.record_local(device_id, 10, value, DP_MUSIC_SET)
+
+    def record_local(
+        self, device_id: str, dp_id: int, value: Any, known_code: str | None = None
+    ) -> None:
+        """Record one datapoint value the clock itself returned over the LAN."""
         with self._lock:
             if device_id not in self._device_strategies:
                 return
-            if self._latest_values.get(device_id, {}).get(10) == value:
+            if self._latest_values.get(device_id, {}).get(dp_id) == value:
                 return
-            self._latest_values.setdefault(device_id, {})[10] = value
+            self._latest_values.setdefault(device_id, {})[dp_id] = deepcopy(value)
             self._reports.setdefault(
                 device_id, deque(maxlen=MAX_REPORTS_PER_DEVICE)
             ).append(
                 {
-                    "dp_id": 10,
-                    "known_code": DP_MUSIC_SET,
+                    "dp_id": dp_id,
+                    "known_code": known_code,
                     "timestamp": int(time() * 1000),
-                    "value": value,
+                    "value": deepcopy(value),
                     "source": "local_readback",
                 }
             )
@@ -151,7 +157,7 @@ class RawDpCapture:
             async_dispatcher_send,
             self._hass,
             f"{TUYA_RAW_DP_UPDATE}_{device_id}",
-            10,
+            dp_id,
         )
 
     def snapshot(self) -> dict[str, list[dict[str, Any]]]:

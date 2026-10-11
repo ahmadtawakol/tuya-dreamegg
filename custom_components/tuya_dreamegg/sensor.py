@@ -32,6 +32,12 @@ COUNTDOWN_REMAINING = SensorEntityDescription(
 )
 
 RAW_DP_DESCRIPTIONS = {
+    4: SensorEntityDescription(
+        key="raw_light_mode",
+        translation_key="raw_light_mode",
+        icon="mdi:lightbulb-question-outline",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     6: SensorEntityDescription(
         key="raw_brightness",
         translation_key="raw_brightness",

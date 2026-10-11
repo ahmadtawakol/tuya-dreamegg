@@ -228,3 +228,60 @@ The native catalog also matches the previously observed schedule sound IDs;
 these consumers now share one source map. Numeric command values and transport
 behavior are unchanged. All 34 labels are covered by the native source fixture
 and translation/schedule regression checks.
+
+### Lamp light mode, white light and local lamp writes
+
+Raw captures from two clocks on 2026-10-06 and 2026-10-07 added three
+observations about the lamp. They were collected while Home Assistant drove the lamp with colour
+writes; nobody put the lamp in its white mode during the capture window.
+
+**DP 4 is the lamp's light mode.** It is a string datapoint absent from the
+cloud specification and from the web labels listed above. One clock reported
+`change`, `breath` and `sunrise` within three seconds of each other in the
+morning, consistent with the clock's own light button stepping through effects,
+and `color` at the moment Home Assistant turned the lamp on that evening with
+`switch_led`, `work_mode: colour` and `colour_data` in one cloud command.
+The cloud `work_mode` (DP 2) stayed `scene` throughout, including after
+`work_mode: colour` commands were accepted, so DP 2 does not describe what the
+lamp is showing. The DP 4 value for the white light is still unknown.
+
+**DP 5 is reported as twelve hex digits.** A cloud write of
+`{"h":36,"s":880,"v":569}` was reported raw as `002403700239`: hue, saturation
+and value as three big-endian 16-bit numbers.
+
+**DP 6 follows brightness in colour mode.** Every change of the colour's value
+was followed by a DP 6 report with the same number. That includes a run of
+steps of 10 and 100, down to `10`, that no Home Assistant command sent and that
+is consistent with the clock's own brightness buttons. DP 7 was not
+reported at all in the window.
+
+The DP 14 payload (`customize_scene_set`) decodes cleanly as 13-byte records.
+One clock held six and the other five, with identical first five records:
+
+| Offset | Observed | Reading |
+| --- | --- | --- |
+| 0 | 0–5 | Slot index |
+| 1 | 0 | Unknown |
+| 2 | 1, 2, 3 | Light mode code; 2 and 3 match Solid Color and Sunlight in the schedule tables |
+| 3–4 | 0, 190 | Hue, big-endian; non-zero only with mode 2 |
+| 5–6 | 0, 1000 | Saturation, big-endian; non-zero only with mode 2 |
+| 7–8 | 0, 800, 1000 | A 0–1000 value |
+| 9–10 | 230, 800 | A 0–1000 value |
+| 11 | 1, 3, 18, 20, 28, 29 | Consistent with a sound ID |
+| 12 | 22, 60 | Consistent with a volume |
+
+Which of the two 0–1000 fields is brightness and which is colour temperature
+has not been established; the Sunlight records hold 1000/800, 0/800 and 0/230.
+
+Based on this, the light entity gained a white path that writes DP 7 and DP 6
+locally and requires their readback, plus a **Test light transport** action and
+a raw Light mode sensor. Unlike the Music transport, this write path was written
+without access to a clock and has **not** been validated live. Open questions,
+in the order the diagnostic action can answer them:
+
+1. Does the clock accept local writes to DP 6 and DP 7 and read them back?
+2. Does a DP 7 write switch the lamp to white by itself, and what does DP 4
+   report then?
+3. If not, which DP 4 string selects the white light?
+4. Is 0 the warm or the cool end of DP 7, and what Kelvin range does the lamp
+   actually cover?

@@ -27,7 +27,12 @@
     },
     "light": {
       "colour_light": {
-        "name": "Colour light"
+        "name": "Colour light",
+        "state_attributes": {
+          "light_mode": {
+            "name": "Light mode"
+          }
+        }
       }
     },
     "number": {
@@ -97,6 +102,9 @@
     "sensor": {
       "countdown_remaining": {
         "name": "Countdown remaining"
+      },
+      "raw_light_mode": {
+        "name": "Light mode (raw)"
       },
       "raw_brightness": {
         "name": "Light brightness (raw)"

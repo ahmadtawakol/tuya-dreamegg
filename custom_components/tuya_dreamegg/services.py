@@ -1,4 +1,8 @@
-"""Bounded DP 10 transport diagnostics using the existing Tuya session."""
+"""Bounded transport diagnostics using the existing Tuya session.
+
+One action tests Music DP 10. The other reads, and optionally writes, only the
+lamp's hidden light mode, brightness and colour temperature datapoints.
+"""
 
 from typing import Any
 
@@ -13,10 +17,17 @@ from tuya_sharing.exceptions import ApiRequestException
 
 from .const import DOMAIN, DP_MUSIC_SET, TUYA_DOMAIN
 from .helpers import is_supported_device
+from .light_transport import (
+    DEVICE_MAX,
+    DEVICE_MIN_BRIGHTNESS,
+    LIGHT_MODE_PATTERN,
+)
 from .music import MUSIC_DP_ID, MUSIC_NAMES
 
 TEST_MUSIC_TRANSPORT = "test_music_transport"
 TRANSPORTS = ("code", "dp_id", "local_probe", "local_test")
+TEST_LIGHT_TRANSPORT = "test_light_transport"
+LIGHT_TRANSPORTS = ("local_probe", "local_test")
 
 
 def _resolve_device(hass: HomeAssistant, registry_id: str) -> tuple[Any, Any]:
@@ -137,9 +148,50 @@ def _test_local(device: Any, transport: str, option: str) -> dict:
 
 @callback
 def async_setup_services(hass: HomeAssistant) -> None:
-    """Register one explicit diagnostic action, limited to Music DP 10."""
+    """Register the explicit diagnostic actions for Music and the lamp."""
     if hass.services.has_service(DOMAIN, TEST_MUSIC_TRANSPORT):
         return
+
+    async def async_test_light_transport(call: ServiceCall) -> dict[str, Any]:
+        device, runtime = _resolve_device(hass, call.data["device_id"])
+        transport = call.data["transport"]
+        requested = {
+            key: call.data[key]
+            for key in ("colour_temperature", "brightness", "light_mode")
+            if key in call.data
+        }
+        if transport == "local_probe":
+            requested = {}
+        elif not requested:
+            raise ServiceValidationError(
+                "A local test needs a colour temperature, brightness or light mode"
+            )
+        result = await runtime.light.async_test(
+            device.id, restore=call.data["restore"], **requested
+        )
+        return {"transport": transport} | result
+
+    hass.services.async_register(
+        DOMAIN,
+        TEST_LIGHT_TRANSPORT,
+        async_test_light_transport,
+        schema=vol.Schema(
+            {
+                vol.Required("device_id"): str,
+                vol.Required("transport"): vol.In(LIGHT_TRANSPORTS),
+                vol.Optional("colour_temperature"): vol.All(
+                    vol.Coerce(int), vol.Range(min=0, max=DEVICE_MAX)
+                ),
+                vol.Optional("brightness"): vol.All(
+                    vol.Coerce(int),
+                    vol.Range(min=DEVICE_MIN_BRIGHTNESS, max=DEVICE_MAX),
+                ),
+                vol.Optional("light_mode"): vol.All(str, vol.Match(LIGHT_MODE_PATTERN)),
+                vol.Optional("restore", default=True): bool,
+            }
+        ),
+        supports_response=SupportsResponse.ONLY,
+    )
 
     async def async_test_music_transport(call: ServiceCall) -> dict[str, Any]:
         device, runtime = _resolve_device(hass, call.data["device_id"])
@@ -173,9 +225,10 @@ def async_setup_services(hass: HomeAssistant) -> None:
 
 @callback
 def async_remove_services_if_unused(hass: HomeAssistant, unloading_id: str) -> None:
-    """Remove the action after the last companion account unloads."""
+    """Remove the actions after the last companion account unloads."""
     if not any(
         entry.entry_id != unloading_id and entry.state is ConfigEntryState.LOADED
         for entry in hass.config_entries.async_entries(DOMAIN)
     ):
         hass.services.async_remove(DOMAIN, TEST_MUSIC_TRANSPORT)
+        hass.services.async_remove(DOMAIN, TEST_LIGHT_TRANSPORT)

@@ -16,6 +16,10 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
   the lamp's brightness and saturation and reports out-of-range values. Use
   this entity for automations that need full brightness or saturated colours.
   Turning it on with a colour switches the clock's work mode to Colour.
+  The same entity also offers a **colour temperature**, which drives the lamp's
+  white light through hidden brightness and colour temperature datapoints over
+  the LAN. This white path is new and not yet confirmed on a clock; see
+  [White light](#white-light).
 - **Countdown** — 0 to 1,440 minutes
 - **Display brightness** — 0 to 100
 - **Time format** — 12-hour or 24-hour
@@ -24,8 +28,8 @@ For every supported Dreamegg in the selected Tuya account, the integration adds:
   Dreamegg app catalog
 - **Stop** — a momentary button for the device's `stop` datapoint
 - **Countdown remaining** — read-only seconds from the clock's raw timer report
-- **Raw datapoint sensors** — observed light brightness, colour temperature,
-  music selection, scene selection, the opaque Customize Scene Set payload, and
+- **Raw datapoint sensors** — observed light mode, light brightness, colour
+  temperature, music selection, scene selection, the opaque Customize Scene Set payload, and
   unidentified DP 102, with no assumed units for raw values
 - **Wake Up Set / Alarm Set** — read-only enabled-slot counts with decoded
   fields in entity attributes; no schedule write control is exposed
@@ -44,8 +48,9 @@ Tuya light, switches, and volume control.
 - Home Assistant 2026.9.0 or newer
 - The official **Tuya** integration configured and loaded
 - The Dreamegg already visible in the official Tuya integration
-- For Music selection, HA must reach the clock on its LAN (Tuya TCP 6668 and
-  UDP discovery), and the existing Tuya device object must contain its local key
+- For Music selection and the white light, HA must reach the clock on its LAN
+  (Tuya TCP 6668 and UDP discovery), and the existing Tuya device object must
+  contain its local key
 
 ## Install with HACS
 
@@ -118,6 +123,64 @@ the official Tuya session and discovers the matching clock's LAN address and
 protocol automatically. Every change is verified by reading the device back.
 The select refreshes once per minute and also listens to raw reports; its state
 is never updated optimistically. Volume and playback switches remain separate.
+
+### White light
+
+The clock's lamp has a white light as well as colours, but the official Tuya
+specification only advertises `colour_data`. Mixing "warm white" from the
+colour LEDs looks pink. Raw reports and the Tuya web panel show three more lamp
+datapoints, none of which has a cloud command code:
+
+| DP | Meaning | Evidence |
+| --- | --- | --- |
+| 4 | Light mode, a string | Reported `color` when a colour write turned the lamp on; also `change`, `breath` and `sunrise` with no command sent |
+| 6 | Brightness, 0–1000 (`bright_value`) | Follows every brightness change, in colour mode too |
+| 7 | Colour temperature, 0–1000 (`temp_value`) | Named by the web panel schema; not yet seen changing |
+
+When the **Colour light** is turned on with a colour temperature, the
+integration writes DP 7 and DP 6 (and DP 3 if the lamp is off) in one local
+message, on the same LAN session, lock and local key as Music selection, and
+requires the clock to read the values back. The entity's white state comes
+only from what the clock returns: a confirmed local readback or a raw report.
+A colour write goes through the cloud as before and returns the entity to
+colour mode. A brightness-only call keeps whichever of the two is showing.
+After a Home Assistant restart the entity reports colour mode until the clock
+reports its light mode again or a colour temperature is set.
+
+Three things are assumptions until tested on a clock:
+
+- **Mode switch.** The value DP 4 holds for the white light has not been
+  captured, so the integration does not write DP 4. It relies on the clock
+  switching to white by itself when DP 7 is written, the way it switches to
+  `color` after a colour write. If the clock still reports a colour mode after
+  a white write, the entity stays in colour mode and logs one warning.
+- **Direction.** 0 is treated as the warm end, as on other Tuya lamps.
+- **Kelvin range.** 2700–6500 K is a nominal, unmeasured span. Only the
+  0–1000 value is sent to the clock.
+
+The **Light mode (raw)** sensor and the light's `light_mode` attribute show
+DP 4, so the white value appears there the first time the lamp is put in white
+from the Dreamegg app or the clock. Set `WHITE_LIGHT_MODE` in `light.py` to
+that value and the integration will write and recognise it.
+
+### Light transport diagnostics
+
+**Dreamegg Sunrise Controls: Test light transport** is limited to supported
+clocks and to DPs 4, 6 and 7.
+
+- `local_probe` only reads and returns the lamp's switch, light mode, raw
+  colour, brightness and colour temperature.
+- `local_test` writes the colour temperature, brightness and/or light mode you
+  give and returns the clock's state before and after with `write_verified`.
+  With **Restore** enabled, it refuses to write without a complete lamp
+  baseline, restores the original colour/preferences, mode, brightness and
+  switch state, and verifies all of those fields. A partial/failed restore is
+  reported explicitly. Turn **Restore** off to leave the lamp as written.
+
+To check the white light, run `local_test` with `colour_temperature: 0`,
+`brightness: 400` and Restore off. If `after.light_mode` is still `color` and
+the lamp did not turn white, repeat with a candidate `light_mode` such as
+`white`.
 
 ### Music transport diagnostics
 
